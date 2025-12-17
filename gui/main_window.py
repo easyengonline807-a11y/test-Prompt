@@ -36,8 +36,9 @@ class MainWindow:
     def setup_window(self):
         """Настройка главного окна"""
         self.root.title("🤖 Groq Prompt Generator v3.0")
-        self.root.geometry("1000x950")
-        self.root.resizable(False, False)
+        self.root.resizable(True, True)   # ✅ Можно менять размер
+        self.root.minsize(900, 700)       # ✅ Только минимальный размер
+        # geometry НЕ УКАЗЫВАЕМ - окно само подстроится!
         self.root.configure(bg="#f0f0f0")
         
         # Светлая тема для ttk

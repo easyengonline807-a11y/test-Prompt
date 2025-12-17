@@ -268,3 +268,30 @@ class KeyManager:
                 active += 1
         
         return active, on_limit, inactive, nearest_reset
+    
+    # ✅ НОВЫЕ МЕТОДЫ ДЛЯ ОБНОВЛЕНИЯ СЧЁТЧИКОВ СТАТИСТИКИ
+    
+    def add_prompts_generated(self, api_key, count):
+        """Добавить количество сгенерированных промптов"""
+        key_id = api_key[-8:]
+        if key_id in self.keys_limits:
+            self.keys_limits[key_id]['prompts_generated'] = \
+                self.keys_limits[key_id].get('prompts_generated', 0) + count
+            self.save_keys_limits()
+
+    def add_file_processed(self, api_key):
+        """Зафиксировать обработку одного файла"""
+        key_id = api_key[-8:]
+        if key_id in self.keys_limits:
+            self.keys_limits[key_id]['files_processed'] = \
+                self.keys_limits[key_id].get('files_processed', 0) + 1
+            self.save_keys_limits()
+
+    def add_error(self, api_key):
+        """Зафиксировать ошибку при обработке"""
+        key_id = api_key[-8:]
+        if key_id in self.keys_limits:
+            self.keys_limits[key_id]['errors'] = \
+                self.keys_limits[key_id].get('errors', 0) + 1
+            self.save_keys_limits()
+

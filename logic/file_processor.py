@@ -72,7 +72,7 @@ class FileProcessor:
             return True
         except:
             return False
-    
+
     def process_file(self, file_path, output_folder, system_prompt, model, temperature, prompts_count, save_raw=False):
         """Обработка одного файла с чанком"""
         
@@ -94,6 +94,17 @@ class FileProcessor:
         )
         
         if status != "success" or not response:
+            # ✅ НОВОЕ: Регистрируем ошибку
+            if hasattr(self.api_client, 'key_manager') and self.api_client.key_manager:
+                # Получаем текущий использованный ключ
+                current_key_index = self.api_client.key_manager.current_key_index - 1
+                if current_key_index < 0:
+                    current_key_index = len(self.api_client.key_manager.api_keys) - 1
+                
+                if current_key_index < len(self.api_client.key_manager.api_keys):
+                    api_key = self.api_client.key_manager.api_keys[current_key_index]
+                    self.api_client.key_manager.add_error(api_key)
+            
             return False, status
         
         # Сохранение сырого ответа (если включено)
@@ -105,6 +116,17 @@ class FileProcessor:
         
         if not prompts:
             self.log(f"⚠️ Не удалось распарсить промпты из {file_path.name}", "warning")
+            
+            # ✅ НОВОЕ: Регистрируем ошибку парсинга
+            if hasattr(self.api_client, 'key_manager') and self.api_client.key_manager:
+                current_key_index = self.api_client.key_manager.current_key_index - 1
+                if current_key_index < 0:
+                    current_key_index = len(self.api_client.key_manager.api_keys) - 1
+                
+                if current_key_index < len(self.api_client.key_manager.api_keys):
+                    api_key = self.api_client.key_manager.api_keys[current_key_index]
+                    self.api_client.key_manager.add_error(api_key)
+            
             return False, "parse_error"
         
         # Сохранение промптов
@@ -112,11 +134,32 @@ class FileProcessor:
         success = self.save_prompts(prompts, output_path)
         
         if success:
+            # ✅ НОВОЕ: Регистрируем успешную обработку
+            if hasattr(self.api_client, 'key_manager') and self.api_client.key_manager:
+                current_key_index = self.api_client.key_manager.current_key_index - 1
+                if current_key_index < 0:
+                    current_key_index = len(self.api_client.key_manager.api_keys) - 1
+                
+                if current_key_index < len(self.api_client.key_manager.api_keys):
+                    api_key = self.api_client.key_manager.api_keys[current_key_index]
+                    self.api_client.key_manager.add_file_processed(api_key)
+                    self.api_client.key_manager.add_prompts_generated(api_key, len(prompts))
+            
             self.log(f"✅ Сохранено {len(prompts)} промптов → {output_path.name}", "success")
             return True, "success"
         else:
+            # ✅ НОВОЕ: Регистрируем ошибку сохранения
+            if hasattr(self.api_client, 'key_manager') and self.api_client.key_manager:
+                current_key_index = self.api_client.key_manager.current_key_index - 1
+                if current_key_index < 0:
+                    current_key_index = len(self.api_client.key_manager.api_keys) - 1
+                
+                if current_key_index < len(self.api_client.key_manager.api_keys):
+                    api_key = self.api_client.key_manager.api_keys[current_key_index]
+                    self.api_client.key_manager.add_error(api_key)
+            
             return False, "save_error"
-    
+
     def get_files_to_process(self, chunks_folder):
         """Получить список .txt файлов для обработки"""
         chunks_path = Path(chunks_folder)

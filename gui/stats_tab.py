@@ -26,7 +26,36 @@ class StatsTab:
             fg="black",
             font=("Arial", 12, "bold")
         ).pack(pady=10)
-        
+
+        # ✅ ПАМЯТКА: Лимиты моделей
+        info_frame = tk.Frame(container, bg="#f0f8ff", relief=tk.RIDGE, borderwidth=2)
+        info_frame.pack(fill=tk.X, pady=10)
+
+        tk.Label(
+            info_frame,
+            text="📋 Лимиты моделей (RPD - запросов в день):",
+            bg="#f0f8ff",
+            fg="#000000",
+            font=("Arial", 10, "bold")
+        ).pack(anchor="w", padx=10, pady=5)
+
+        from logic.model_limits import MODEL_LIMITS
+
+        info_text = ""
+        for model_name, model_data in MODEL_LIMITS.items():
+            emoji = model_data['name'].split()[0]  # Берём эмодзи
+            rpd = model_data['rpd']
+            info_text += f"{emoji} {model_name}: {rpd:,} RPD\n"
+
+        tk.Label(
+            info_frame,
+            text=info_text.strip(),
+            bg="#f0f8ff",
+            fg="#333333",
+            font=("Arial", 9),
+            justify="left"
+        ).pack(anchor="w", padx=20, pady=5)
+
         # Настройка стиля таблицы
         style = ttk.Style()
         style.configure("Treeview",

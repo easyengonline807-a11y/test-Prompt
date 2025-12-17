@@ -2,8 +2,16 @@
 Groq Prompt Generator v3.0
 Главный файл запуска приложения
 """
-
 import tkinter as tk
+import os
+import sys
+from pathlib import Path
+
+# ✅ ОТКЛЮЧИТЬ СОЗДАНИЕ .pyc ФАЙЛОВ ПРИ РАЗРАБОТКЕ
+sys.dont_write_bytecode = True
+
+# Импорт компонента для очистки кэша
+from utils.cache_cleaner import cleanup_on_startup, CacheCleaner
 
 # Импорт всех компонентов
 from config.settings import ConfigManager
@@ -18,6 +26,12 @@ from utils.logger import Logger
 
 def main():
     """Точка входа в приложение"""
+    
+    # ✅ НОВОЕ: Очистка кэша при запуске в режиме разработки
+    DEV_MODE = True  # Установите False для продакшена
+    if DEV_MODE:
+        print("🧹 Режим разработки - очистка кэша Python...")
+        cleanup_on_startup(dev_mode=True)
     
     # Создание главного окна
     root = tk.Tk()

@@ -178,6 +178,13 @@ class MainWindow:
             width=18, height=1, cursor="hand2", relief=tk.RAISED, bd=3
         ).pack(side=tk.LEFT, padx=5)
 
+        tk.Button(
+            row2, text="🧹 Очистить кэш", command=self.clean_cache,
+            font=("Arial", 11, "bold"), bg="#ff9900", fg="white",
+            width=18, height=1, cursor="hand2", relief=tk.RAISED, bd=3
+        ).pack(side=tk.LEFT, padx=5)
+
+
         # ✅ НОВАЯ КНОПКА: Очистить кэш
         tk.Button(
             row2, text="🧹 Очистить кэш", command=self.clean_cache,

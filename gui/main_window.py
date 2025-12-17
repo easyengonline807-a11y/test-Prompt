@@ -162,15 +162,29 @@ class MainWindow:
         )
         self.stop_button.pack(side=tk.LEFT, padx=5)
         
-        # Ряд 2: Тест API / Сброс статистики
+        # Ряд 2: Тест API / Сброс статистики / Очистить кэш
         row2 = tk.Frame(button_frame, bg="#f0f0f0")
         row2.pack(fill=tk.X, pady=2)
-        
+
         tk.Button(
             row2, text="🔍 Тест API", command=self.test_api,
             font=("Arial", 11, "bold"), bg="#0088cc", fg="white",
-            width=22, height=1, cursor="hand2", relief=tk.RAISED, bd=3
+            width=18, height=1, cursor="hand2", relief=tk.RAISED, bd=3
         ).pack(side=tk.LEFT, padx=5)
+
+        tk.Button(
+            row2, text="🔄 Сброс статистики", command=self.reset_stats,
+            font=("Arial", 11, "bold"), bg="#8800cc", fg="white",
+            width=18, height=1, cursor="hand2", relief=tk.RAISED, bd=3
+        ).pack(side=tk.LEFT, padx=5)
+
+        # ✅ НОВАЯ КНОПКА: Очистить кэш
+        tk.Button(
+            row2, text="🧹 Очистить кэш", command=self.clean_cache,
+            font=("Arial", 11, "bold"), bg="#ff9900", fg="white",
+            width=18, height=1, cursor="hand2", relief=tk.RAISED, bd=3
+        ).pack(side=tk.LEFT, padx=5)
+
         
         tk.Button(
             row2, text="🔄 Сброс статистики", command=self.reset_stats,
@@ -248,25 +262,30 @@ class MainWindow:
         threading.Thread(target=test_thread, daemon=True).start()
     
     def reset_stats(self):
-        """Сброс статистики"""
+        """Сброс статистики API ключей"""
         dialog = tk.Toplevel(self.root)
         dialog.title("Сброс статистики")
         dialog.geometry("350x150")
         dialog.resizable(False, False)
         dialog.configure(bg="#ffffff")
         
-        tk.Label(dialog, text="Что сбросить?", font=("Arial", 12, "bold"), bg="#ffffff").pack(pady=20)
+        tk.Label(dialog, text="Выберите что сбросить:", font=("Arial", 12, "bold"), bg="#ffffff").pack(pady=20)
         
         def reset_session():
+            """Сброс статистики текущей сессии"""
             self.processed_files = 0
             self.total_files = 0
             self.start_time = None
             self.processing_times = []
             self.logger.log("🔄 Статистика сессии сброшена", "info")
+            messagebox.showinfo("✅ Успех", "Статистика сессии сброшена!")
             dialog.destroy()
         
         def reset_all():
-            result = messagebox.askyesno("Подтверждение", "Сбросить ВСЮ статистику всех ключей?")
+            """Сброс всей статистики всех API ключей"""
+            result = messagebox.askyesno("⚠️ Подтверждение", 
+                                         "Сбросить ВСЮ статистику всех API ключей?\n\n"
+                                         "Это удалит все данные об использовании ключей.")
             if result:
                 self.keys.keys_limits = {}
                 self.keys.save_keys_limits()
@@ -275,14 +294,18 @@ class MainWindow:
                 self.start_time = None
                 self.processing_times = []
                 self.stats_tab.update_display()
-                self.logger.log("🔄 Вся статистика сброшена", "info")
-            dialog.destroy()
+                self.logger.log("🔄 Вся статистика API ключей сброшена", "info")
+                messagebox.showinfo("✅ Успех", "Вся статистика сброшена!")
+                dialog.destroy()
         
         btn_frame = tk.Frame(dialog, bg="#ffffff")
         btn_frame.pack(pady=10)
         
-        tk.Button(btn_frame, text="Сбросить сессию", command=reset_session, width=18, bg="#0088cc", fg="white", font=("Arial", 10, "bold")).pack(side=tk.LEFT, padx=5)
-        tk.Button(btn_frame, text="Сбросить всё", command=reset_all, width=18, bg="#cc0000", fg="white", font=("Arial", 10, "bold")).pack(side=tk.LEFT, padx=5)
+        tk.Button(btn_frame, text="Сброс сессии", command=reset_session, 
+                  width=18, bg="#0088cc", fg="white", font=("Arial", 10, "bold")).pack(side=tk.LEFT, padx=5)
+        
+        tk.Button(btn_frame, text="Сброс всех данных", command=reset_all, 
+                  width=18, bg="#cc0000", fg="white", font=("Arial", 10, "bold")).pack(side=tk.LEFT, padx=5)
     
     def auto_test_keys(self):
         """Автотест первых 3 ключей при запуске"""
@@ -460,3 +483,34 @@ class MainWindow:
             self.logger.log(f"🎉 Завершено: {self.processed_files}/{self.total_files} файлов за {minutes}м {seconds}с", "success")
             self.progress_label.config(text="✅ Обработка завершена!")
             winsound.Beep(1000, 500)
+    
+    def clean_cache(self):
+    """🧹 ОТДЕЛЬНАЯ ФУНКЦИЯ: Очистка Python кэша (__pycache__)"""
+    result = messagebox.askyesno("🧹 Очистить кэш", 
+                                 "Это удалит все скомпилированные Python файлы (.pyc)\n"
+                                 "и папки __pycache__.\n\n"
+                                 "Приложение будет работать медленнее после первого\n"
+                                 "запуска, но будет использовать актуальный код.\n\n"
+                                 "Продолжить?")
+    if not result:
+        return
+    
+    try:
+        from utils.cache_cleaner import CacheCleaner
+        cleaner = CacheCleaner(logger=self.logger)
+        count = cleaner.clean_all_cache(verbose=True)
+        
+        self.logger.log(f"✅ Кэш успешно очищен! Удалено элементов: {count}", "success")
+        messagebox.showinfo("✅ Успех", 
+                           f"Кэш Python успешно очищен!\n\n"
+                           f"Удалено элементов: {count}\n\n"
+                           f"Примечание: При следующем запуске приложение\n"
+                           f"будет работать немного медленнее.")
+    except Exception as e:
+        self.logger.log(f"❌ Ошибка очистки кэша: {str(e)}", "error")
+        messagebox.showerror("❌ Ошибка", 
+                            f"Не удалось очистить кэш:\n{str(e)}\n\n"
+                            f"Попробуйте очистить вручную через PowerShell:\n"
+                            f"Get-ChildItem -Path . -Directory -Filter __pycache__ -Recurse | "
+                            f"Remove-Item -Recurse -Force")
+        

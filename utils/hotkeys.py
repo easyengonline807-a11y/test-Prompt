@@ -2,32 +2,39 @@ import tkinter as tk
 from tkinter import scrolledtext
 
 class HotkeyManager:
-    """Управление горячими клавишами Ctrl+A/C/V/X"""
+    """Управление горячими клавишами Ctrl+A/C/V/X (работает на ВСЕХ раскладках)"""
     
     def __init__(self, root):
         self.root = root
         self.setup_hotkeys()
     
     def setup_hotkeys(self):
-        """Горячие клавиши (работают на обеих раскладках автоматически)"""
-        # Ctrl+A - выделить всё
-        self.root.bind_all("<Control-a>", self.select_all)
-        self.root.bind_all("<Control-A>", self.select_all)
+        """Универсальные горячие клавиши через keycode (независимо от раскладки)"""
         
-        # Ctrl+C - копировать
-        self.root.bind_all("<Control-c>", self.copy_text)
-        self.root.bind_all("<Control-C>", self.copy_text)
+        # Биндим на KeyPress с модификатором Control
+        self.root.bind_all("<Control-KeyPress>", self.handle_control_key)
+    
+    def handle_control_key(self, event):
+        """Обработчик Ctrl+клавиша (работает на английской, русской и любой раскладке)"""
         
-        # Ctrl+V - вставить
-        self.root.bind_all("<Control-v>", self.paste_text)
-        self.root.bind_all("<Control-V>", self.paste_text)
+        # keycode 65 = клавиша A/Ф - Выделить всё
+        if event.keycode == 65:
+            return self.select_all(event)
         
-        # Ctrl+X - вырезать
-        self.root.bind_all("<Control-x>", self.cut_text)
-        self.root.bind_all("<Control-X>", self.cut_text)
+        # keycode 67 = клавиша C/С - Копировать
+        elif event.keycode == 67:
+            return self.copy_text(event)
+        
+        # keycode 86 = клавиша V/М - Вставить
+        elif event.keycode == 86:
+            return self.paste_text(event)
+        
+        # keycode 88 = клавиша X/Ч - Вырезать
+        elif event.keycode == 88:
+            return self.cut_text(event)
     
     def select_all(self, event):
-        """Выделить весь текст"""
+        """Выделить весь текст (Ctrl+A)"""
         widget = self.root.focus_get()
         if isinstance(widget, tk.Entry):
             widget.select_range(0, tk.END)
@@ -38,7 +45,7 @@ class HotkeyManager:
         return "break"
     
     def copy_text(self, event):
-        """Копировать текст"""
+        """Копировать текст (Ctrl+C)"""
         widget = self.root.focus_get()
         try:
             if isinstance(widget, tk.Entry):
@@ -54,7 +61,7 @@ class HotkeyManager:
         return "break"
     
     def paste_text(self, event):
-        """Вставить текст"""
+        """Вставить текст (Ctrl+V)"""
         widget = self.root.focus_get()
         try:
             text = self.root.clipboard_get()
@@ -67,7 +74,7 @@ class HotkeyManager:
         return "break"
     
     def cut_text(self, event):
-        """Вырезать текст"""
+        """Вырезать текст (Ctrl+X)"""
         widget = self.root.focus_get()
         try:
             if isinstance(widget, tk.Entry):

@@ -6,9 +6,10 @@ from datetime import datetime
 class GroqAPIClient:
     """Клиент для работы с Groq API"""
     
-    def __init__(self, key_manager, logger=None):
+    def __init__(self, key_manager, logger=None, config=None):
         self.key_manager = key_manager
         self.logger = logger
+        self.config = config
         self.api_url = "https://api.groq.com/openai/v1/chat/completions"
     
     def log(self, message, level="info"):
@@ -18,8 +19,29 @@ class GroqAPIClient:
         else:
             print(message)
     
+    def validate_model(self, model):
+        """✅ НОВОЕ: Проверить доступность модели перед использованием"""
+        production_models = [
+            "llama-3.1-8b-instant",
+            "llama-3.3-70b-versatile",
+            "openai/gpt-oss-120b",
+            "openai/gpt-oss-20b",
+            "meta-llama/llama-guard-4-12b"
+        ]
+        
+        if model not in production_models:
+            self.log(f"⚠️ Модель '{model}' не в списке Production! Проверьте config.json", "warning")
+            return False
+        return True
+    
     def send_request(self, user_message, system_prompt, model, temperature, max_retries=3):
         """Отправка запроса к Groq API с повторами при ошибках"""
+        
+        # ✅ НОВОЕ: Проверяем модель перед отправкой
+        if not self.validate_model(model):
+            self.log(f"❌ Модель '{model}' недоступна!", "error")
+            winsound.Beep(800, 500)
+            return None, "invalid_model"
         
         for attempt in range(max_retries):
             # Получаем следующий доступный ключ
@@ -65,7 +87,7 @@ class GroqAPIClient:
                     # Невалидный ключ
                     self.log(f"❌ Ключ ...{key_id} невалидный (401)", "error")
                     self.key_manager.mark_key_invalid(api_key)
-                    continue  # Пробуем следующий ключ
+                    continue
                 
                 elif response.status_code == 429:
                     # Rate limit - прогрессивная задержка

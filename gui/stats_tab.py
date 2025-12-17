@@ -9,7 +9,9 @@ class StatsTab:
         self.parent = parent
         self.key_manager = key_manager
         self.create_tab()
-    
+
+# gui/stats_tab.py - заменить метод create_tab
+
     def create_tab(self):
         """Создание вкладки статистики"""
         container = tk.Frame(self.parent, bg="#ffffff")
@@ -39,16 +41,18 @@ class StatsTab:
         )
         style.map('Treeview', background=[('selected', '#cce5ff')])
         
-        # Таблица
-        columns = ("Ключ", "Запросы", "Токены IN", "Токены OUT", "Промпты", "Файлы", "Ошибки", "Статус")
+        # ✅ НОВАЯ КОЛОНКА: "RPD Лимит"
+        columns = ("Ключ", "Запросы", "Токены IN", "Токены OUT", "Промпты", "Файлы", "Ошибки", "Статус", "RPD Лимит")
         self.stats_tree = ttk.Treeview(container, columns=columns, show='headings', height=20)
         
         for col in columns:
             self.stats_tree.heading(col, text=col)
             if col == "Ключ":
-                self.stats_tree.column(col, width=120)
+                self.stats_tree.column(col, width=100)
             elif col == "Статус":
-                self.stats_tree.column(col, width=120)
+                self.stats_tree.column(col, width=100)
+            elif col == "RPD Лимит":  # ✅ НОВАЯ колонка - шире
+                self.stats_tree.column(col, width=150)
             else:
                 self.stats_tree.column(col, width=80)
         
@@ -58,12 +62,20 @@ class StatsTab:
         
         self.stats_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-    
+
     def update_display(self):
-        """Обновление отображения таблицы"""
+        """✅ ОБНОВЛЕННЫЙ: Обновление отображения таблицы с RPD"""
+        from logic.model_limits import MODEL_LIMITS
+        
         # Очистка
         for item in self.stats_tree.get_children():
             self.stats_tree.delete(item)
+        
+        # Нужно получить текущую модель из конфига
+        # Предполагаем, что в settings_tab.py есть model_var
+        # Для простоты возьмём первую модель как default
+        current_model = "llama-3.3-70b-versatile"  # Можно передать как параметр
+        rpd_limit = MODEL_LIMITS.get(current_model, {}).get('rpd', 1000)
         
         # Заполнение
         for key in self.key_manager.api_keys:
@@ -72,7 +84,7 @@ class StatsTab:
             if key_id in self.key_manager.keys_limits:
                 data = self.key_manager.keys_limits[key_id]
                 
-                # Определение статуса
+                # ✅ НОВОЕ: Определение статуса
                 if data.get('permanently_invalid', False):
                     status = "❌ Невалидный"
                 elif data.get('tokens_used_today', 0) >= 14400:
@@ -81,6 +93,18 @@ class StatsTab:
                     status = "🟡 RPM лимит"
                 else:
                     status = "🟢 Активен"
+                
+                # ✅ НОВОЕ: Расчёт RPD статуса с цветовым индикатором
+                total_requests = data.get('total_requests', 0)
+                rpd_percentage = (total_requests / rpd_limit * 100) if rpd_limit > 0 else 0
+                
+                # ✅ Цветовой индикатор на основе процента
+                if rpd_percentage < 50:
+                    rpd_indicator = f"🟢 {total_requests}/{rpd_limit} ({rpd_percentage:.0f}%)"
+                elif rpd_percentage < 80:
+                    rpd_indicator = f"🟡 {total_requests}/{rpd_limit} ({rpd_percentage:.0f}%)"
+                else:
+                    rpd_indicator = f"🔴 {total_requests}/{rpd_limit} ({rpd_percentage:.0f}%)"
                 
                 # Вставка в таблицу
                 self.stats_tree.insert('', tk.END, values=(
@@ -91,10 +115,16 @@ class StatsTab:
                     data.get('prompts_generated', 0),
                     data.get('files_processed', 0),
                     data.get('errors', 0),
-                    status
+                    status,
+                    rpd_indicator  # ✅ НОВАЯ КОЛОНКА
                 ))
             else:
                 # Ключ ещё не использовался
+                rpd_indicator = f"🟢 0/{rpd_limit} (0%)"  # ✅ НОВАЯ КОЛОНКА
+                
                 self.stats_tree.insert('', tk.END, values=(
-                    f"...{key_id}", 0, 0, 0, 0, 0, 0, "🟢 Активен"
+                    f"...{key_id}",
+                    0, 0, 0, 0, 0, 0,
+                    "🟢 Активен",
+                    rpd_indicator  # ✅ НОВАЯ КОЛОНКА
                 ))

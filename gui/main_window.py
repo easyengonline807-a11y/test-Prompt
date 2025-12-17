@@ -485,32 +485,31 @@ class MainWindow:
             winsound.Beep(1000, 500)
     
     def clean_cache(self):
-    """🧹 ОТДЕЛЬНАЯ ФУНКЦИЯ: Очистка Python кэша (__pycache__)"""
-    result = messagebox.askyesno("🧹 Очистить кэш", 
-                                 "Это удалит все скомпилированные Python файлы (.pyc)\n"
-                                 "и папки __pycache__.\n\n"
-                                 "Приложение будет работать медленнее после первого\n"
-                                 "запуска, но будет использовать актуальный код.\n\n"
-                                 "Продолжить?")
-    if not result:
-        return
-    
-    try:
-        from utils.cache_cleaner import CacheCleaner
-        cleaner = CacheCleaner(logger=self.logger)
-        count = cleaner.clean_all_cache(verbose=True)
+        """🧹 ОТДЕЛЬНАЯ ФУНКЦИЯ: Очистка Python кэша (__pycache__)"""
+        result = messagebox.askyesno("🧹 Очистить кэш", 
+                                     "Это удалит все скомпилированные Python файлы (.pyc)\n"
+                                     "и папки __pycache__.\n\n"
+                                     "Приложение будет работать медленнее после первого\n"
+                                     "запуска, но будет использовать актуальный код.\n\n"
+                                     "Продолжить?")
+        if not result:
+            return
         
-        self.logger.log(f"✅ Кэш успешно очищен! Удалено элементов: {count}", "success")
-        messagebox.showinfo("✅ Успех", 
-                           f"Кэш Python успешно очищен!\n\n"
-                           f"Удалено элементов: {count}\n\n"
-                           f"Примечание: При следующем запуске приложение\n"
-                           f"будет работать немного медленнее.")
-    except Exception as e:
-        self.logger.log(f"❌ Ошибка очистки кэша: {str(e)}", "error")
-        messagebox.showerror("❌ Ошибка", 
-                            f"Не удалось очистить кэш:\n{str(e)}\n\n"
-                            f"Попробуйте очистить вручную через PowerShell:\n"
-                            f"Get-ChildItem -Path . -Directory -Filter __pycache__ -Recurse | "
-                            f"Remove-Item -Recurse -Force")
-        
+        try:
+            from utils.cache_cleaner import CacheCleaner
+            cleaner = CacheCleaner(logger=self.logger)
+            count = cleaner.clean_all_cache(verbose=True)
+            
+            self.logger.log(f"✅ Кэш успешно очищен! Удалено элементов: {count}", "success")
+            messagebox.showinfo("✅ Успех", 
+                               f"Кэш Python успешно очищен!\n\n"
+                               f"Удалено элементов: {count}\n\n"
+                               f"Примечание: При следующем запуске приложение\n"
+                               f"будет работать немного медленнее.")
+        except Exception as e:
+            self.logger.log(f"❌ Ошибка очистки кэша: {str(e)}", "error")
+            messagebox.showerror("❌ Ошибка", 
+                                f"Не удалось очистить кэш:\n{str(e)}\n\n"
+                                f"Попробуйте очистить вручную через PowerShell:\n"
+                                f"Get-ChildItem -Path . -Directory -Filter __pycache__ -Recurse | "
+                                f"Remove-Item -Recurse -Force")

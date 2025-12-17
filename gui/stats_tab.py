@@ -64,22 +64,31 @@ class StatsTab:
         self.stats_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
     
-    def update_display(self):
-        """✅ ОБНОВЛЕННЫЙ: Обновление отображения таблицы с RPD"""
+    def update_display(self, model=None):  # ← ДОБАВЛЯЕМ ПАРАМЕТР model
+        """✅ ИСПРАВЛЕННЫЙ: Обновление отображения таблицы с RPD"""
         try:
             from logic.model_limits import MODEL_LIMITS
         except ImportError:
             MODEL_LIMITS = {"llama-3.3-70b-versatile": {"rpd": 1_000}}
         
-        # Очистка
+        # Очистка таблицы
         for item in self.stats_tree.get_children():
             self.stats_tree.delete(item)
         
-        # Получаем текущую модель
-        current_model = "llama-3.3-70b-versatile"
-        rpd_limit = MODEL_LIMITS.get(current_model, {}).get('rpd', 1000)
+        # ✅ ИСПРАВЛЕНО: Получаем ПЕРЕДАННУЮ модель (или берем из config.json)
+        if model is None:
+            try:
+                import json
+                with open('config.json', 'r', encoding='utf-8') as f:
+                    config_data = json.load(f)
+                    model = config_data.get('model', 'llama-3.3-70b-versatile')
+            except:
+                model = 'llama-3.3-70b-versatile'
         
-        # Заполнение
+        # ✅ Теперь берем правильный лимит для ТЕКУЩЕЙ модели
+        rpd_limit = MODEL_LIMITS.get(model, {}).get('rpd', 1000)
+        
+        # Заполнение таблицы (остальной код без изменений)
         for key in self.key_manager.api_keys:
             key_id = key[-8:]
             
@@ -118,7 +127,7 @@ class StatsTab:
                     data.get('files_processed', 0),
                     data.get('errors', 0),
                     status,
-                    rpd_indicator  # ✅ НОВАЯ КОЛОНКА
+                    rpd_indicator
                 ))
             else:
                 # Ключ ещё не использовался
@@ -128,5 +137,5 @@ class StatsTab:
                     f"...{key_id}",
                     0, 0, 0, 0, 0, 0,
                     "🟢 Активен",
-                    rpd_indicator  # ✅ НОВАЯ КОЛОНКА
+                    rpd_indicator
                 ))

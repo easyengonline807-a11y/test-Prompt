@@ -1,6 +1,6 @@
 {
   "8hVMjf0v": {
-    "total_requests": 5,
+    "total_requests": 6,
     "total_tokens_in": 0,
     "total_tokens_out": 0,
     "prompts_generated": 51,
@@ -8,13 +8,13 @@
     "errors": 0,
     "requests_this_minute": 1,
     "tokens_used_today": 37,
-    "rpm_reset_at": "2025-12-17T23:10:42.603348",
+    "rpm_reset_at": "2025-12-17T23:17:22.585049",
     "daily_reset_at": "2025-12-18T16:50:12.430381",
     "invalid_attempts": 0,
     "permanently_invalid": false
   },
   "N2md9m8k": {
-    "total_requests": 5,
+    "total_requests": 6,
     "total_tokens_in": 0,
     "total_tokens_out": 0,
     "prompts_generated": 51,
@@ -22,13 +22,13 @@
     "errors": 0,
     "requests_this_minute": 1,
     "tokens_used_today": 37,
-    "rpm_reset_at": "2025-12-17T23:10:43.930630",
+    "rpm_reset_at": "2025-12-17T23:17:23.932723",
     "daily_reset_at": "2025-12-18T16:50:13.592720",
     "invalid_attempts": 0,
     "permanently_invalid": false
   },
   "lnkoUdZc": {
-    "total_requests": 5,
+    "total_requests": 6,
     "total_tokens_in": 0,
     "total_tokens_out": 0,
     "prompts_generated": 21,
@@ -36,7 +36,7 @@
     "errors": 0,
     "requests_this_minute": 1,
     "tokens_used_today": 37,
-    "rpm_reset_at": "2025-12-17T23:10:45.110183",
+    "rpm_reset_at": "2025-12-17T23:17:25.276788",
     "daily_reset_at": "2025-12-18T16:50:14.780747",
     "invalid_attempts": 0,
     "permanently_invalid": false

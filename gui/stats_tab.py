@@ -27,34 +27,31 @@ class StatsTab:
             font=("Arial", 12, "bold")
         ).pack(pady=10)
 
-        # ✅ ПАМЯТКА: Лимиты моделей
+        # ✅ ПАМЯТКА: Лимиты моделей (КОМПАКТНАЯ)
         info_frame = tk.Frame(container, bg="#f0f8ff", relief=tk.RIDGE, borderwidth=2)
-        info_frame.pack(fill=tk.X, pady=10)
-
-        tk.Label(
-            info_frame,
-            text="📋 Лимиты моделей (RPD - запросов в день):",
-            bg="#f0f8ff",
-            fg="#000000",
-            font=("Arial", 10, "bold")
-        ).pack(anchor="w", padx=10, pady=5)
+        info_frame.pack(fill=tk.X, pady=5)
 
         from logic.model_limits import MODEL_LIMITS
 
-        info_text = ""
+        # Создаём одну строку с лимитами
+        info_text = "📋 Лимиты RPD: "
+        limits = []
         for model_name, model_data in MODEL_LIMITS.items():
-            emoji = model_data['name'].split()[0]  # Берём эмодзи
+            emoji = model_data['name'].split()[0]
             rpd = model_data['rpd']
-            info_text += f"{emoji} {model_name}: {rpd:,} RPD\n"
+            limits.append(f"{emoji}{model_name.split('-')[0]}: {rpd:,}")
+
+        info_text += " | ".join(limits)
 
         tk.Label(
             info_frame,
-            text=info_text.strip(),
+            text=info_text,
             bg="#f0f8ff",
             fg="#333333",
-            font=("Arial", 9),
-            justify="left"
-        ).pack(anchor="w", padx=20, pady=5)
+            font=("Arial", 8),
+            wraplength=900
+        ).pack(padx=10, pady=3)
+
 
         # Настройка стиля таблицы
         style = ttk.Style()

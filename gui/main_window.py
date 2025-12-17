@@ -220,7 +220,8 @@ class MainWindow:
         """Периодическое обновление интерфейса"""
         if not self.stop_flag:
             self.update_status_display()
-            self.stats_tab.update_display()
+            current_model = self.settings_tab.model_var.get()
+            self.stats_tab.update_display(model=current_model)
             self.root.after(2000, self.periodic_update)
     
     def test_api(self):
@@ -251,7 +252,9 @@ class MainWindow:
                 messagebox.showerror("Ошибка", "Не удалось подключиться к API")
             
             self.update_status_display()
-            self.stats_tab.update_display()
+            current_model = self.settings_tab.model_var.get()
+            self.stats_tab.update_display(model=current_model)
+
         
         threading.Thread(target=test_thread, daemon=True).start()
     

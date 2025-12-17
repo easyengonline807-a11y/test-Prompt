@@ -1,6 +1,9 @@
+# gui/stats_tab.py - ПОЛНОСТЬЮ ПЕРЕПИСАТЬ
+
 import tkinter as tk
 from tkinter import ttk
 from datetime import datetime
+
 
 class StatsTab:
     """Вкладка статистики ключей"""
@@ -9,9 +12,7 @@ class StatsTab:
         self.parent = parent
         self.key_manager = key_manager
         self.create_tab()
-
-# gui/stats_tab.py - заменить метод create_tab
-
+    
     def create_tab(self):
         """Создание вкладки статистики"""
         container = tk.Frame(self.parent, bg="#ffffff")
@@ -19,10 +20,10 @@ class StatsTab:
         
         # Заголовок
         tk.Label(
-            container, 
-            text="📊 Статистика использования ключей", 
-            bg="#ffffff", 
-            fg="black", 
+            container,
+            text="📊 Статистика использования ключей",
+            bg="#ffffff",
+            fg="black",
             font=("Arial", 12, "bold")
         ).pack(pady=10)
         
@@ -50,9 +51,9 @@ class StatsTab:
             if col == "Ключ":
                 self.stats_tree.column(col, width=100)
             elif col == "Статус":
-                self.stats_tree.column(col, width=100)
+                self.stats_tree.column(col, width=110)
             elif col == "RPD Лимит":  # ✅ НОВАЯ колонка - шире
-                self.stats_tree.column(col, width=150)
+                self.stats_tree.column(col, width=160)
             else:
                 self.stats_tree.column(col, width=80)
         
@@ -62,19 +63,20 @@ class StatsTab:
         
         self.stats_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-
+    
     def update_display(self):
         """✅ ОБНОВЛЕННЫЙ: Обновление отображения таблицы с RPD"""
-        from logic.model_limits import MODEL_LIMITS
+        try:
+            from logic.model_limits import MODEL_LIMITS
+        except ImportError:
+            MODEL_LIMITS = {"llama-3.3-70b-versatile": {"rpd": 1_000}}
         
         # Очистка
         for item in self.stats_tree.get_children():
             self.stats_tree.delete(item)
         
-        # Нужно получить текущую модель из конфига
-        # Предполагаем, что в settings_tab.py есть model_var
-        # Для простоты возьмём первую модель как default
-        current_model = "llama-3.3-70b-versatile"  # Можно передать как параметр
+        # Получаем текущую модель
+        current_model = "llama-3.3-70b-versatile"
         rpd_limit = MODEL_LIMITS.get(current_model, {}).get('rpd', 1000)
         
         # Заполнение
@@ -84,7 +86,7 @@ class StatsTab:
             if key_id in self.key_manager.keys_limits:
                 data = self.key_manager.keys_limits[key_id]
                 
-                # ✅ НОВОЕ: Определение статуса
+                # Определение статуса
                 if data.get('permanently_invalid', False):
                     status = "❌ Невалидный"
                 elif data.get('tokens_used_today', 0) >= 14400:
@@ -94,11 +96,11 @@ class StatsTab:
                 else:
                     status = "🟢 Активен"
                 
-                # ✅ НОВОЕ: Расчёт RPD статуса с цветовым индикатором
+                # Расчёт RPD статуса с цветовым индикатором
                 total_requests = data.get('total_requests', 0)
                 rpd_percentage = (total_requests / rpd_limit * 100) if rpd_limit > 0 else 0
                 
-                # ✅ Цветовой индикатор на основе процента
+                # Цветовой индикатор на основе процента
                 if rpd_percentage < 50:
                     rpd_indicator = f"🟢 {total_requests}/{rpd_limit} ({rpd_percentage:.0f}%)"
                 elif rpd_percentage < 80:
@@ -120,7 +122,7 @@ class StatsTab:
                 ))
             else:
                 # Ключ ещё не использовался
-                rpd_indicator = f"🟢 0/{rpd_limit} (0%)"  # ✅ НОВАЯ КОЛОНКА
+                rpd_indicator = f"🟢 0/{rpd_limit} (0%)"
                 
                 self.stats_tree.insert('', tk.END, values=(
                     f"...{key_id}",

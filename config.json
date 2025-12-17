@@ -1,5 +1,5 @@
 {
-  "model": "openai/gpt-oss-120b",
+  "model": "openai/gpt-oss-20b",
   "temperature": 0.8,
   "chunks_folder": "C:/Users/pland/OneDrive/Рабочий стол/Новая папка/2 — копия/chunks",
   "prompts_folder": "C:/Users/pland/OneDrive/Рабочий стол/Новая папка/2 — копия/промпт",

@@ -146,9 +146,9 @@ class KeyManager:
             return key
         
         return None
-    
+        
     def update_key_limits(self, api_key, headers):
-        """Обновление лимитов из заголовков API"""
+        """✅ ИСПРАВЛЕННЫЙ: Обновление лимитов из заголовков API"""
         key_id = api_key[-8:]
         
         if key_id not in self.keys_limits:
@@ -166,6 +166,9 @@ class KeyManager:
                 "invalid_attempts": 0,
                 "permanently_invalid": False
             }
+        
+        # ✅ КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: Увеличиваем счётчик запросов!
+        self.keys_limits[key_id]['total_requests'] = self.keys_limits[key_id].get('total_requests', 0) + 1
         
         # Сброс invalid_attempts при успешном запросе
         self.keys_limits[key_id]['invalid_attempts'] = 0
@@ -187,7 +190,7 @@ class KeyManager:
             self.keys_limits[key_id]['rpm_reset_at'] = (datetime.now() + timedelta(seconds=reset_seconds)).isoformat()
         
         self.save_keys_limits()
-    
+
     def parse_reset_time(self, reset_str):
         """Парсинг времени сброса из строки типа '1m30s'"""
         total_seconds = 0

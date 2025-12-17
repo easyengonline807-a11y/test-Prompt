@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, scrolledtext, filedialog
+import json
+from pathlib import Path
 
 class SettingsTab:
     """Вкладка настроек"""
@@ -8,6 +10,31 @@ class SettingsTab:
         self.parent = parent
         self.config = config_manager
         self.create_tab()
+    
+    def load_models_from_config(self):
+        """📌 НОВОЕ: Загрузить список моделей из config.json"""
+        try:
+            # Пытаемся загрузить из config.json
+            if hasattr(self.config, 'production_models'):
+                return self.config.production_models
+            
+            # Fallback: загружаем напрямую из файла
+            with open('config.json', 'r', encoding='utf-8') as f:
+                config_data = json.load(f)
+                models = config_data.get('production_models', [])
+                if models:
+                    return models
+        except:
+            pass
+        
+        # Последний fallback - Production модели
+        return [
+            "llama-3.1-8b-instant",
+            "llama-3.3-70b-versatile",
+            "openai/gpt-oss-120b",
+            "openai/gpt-oss-20b",
+            "meta-llama/llama-guard-4-12b"
+        ]
     
     def create_tab(self):
         """Создание вкладки настроек"""
@@ -20,12 +47,11 @@ class SettingsTab:
         tk.Label(container, text="🤖 Модель:", bg="#ffffff", fg="black", font=("Arial", 10, "bold")).grid(row=row, column=0, sticky=tk.W, pady=10)
         self.model_var = tk.StringVar(value=self.config.get("model", "llama-3.3-70b-versatile"))
         model_combo = ttk.Combobox(container, textvariable=self.model_var, width=40, state="readonly")
-        model_combo['values'] = [
-            "llama-3.3-70b-versatile",
-            "llama-3.1-70b-versatile",
-            "llama-3.1-8b-instant",
-            "gemma2-9b-it"
-        ]
+        
+        # ✅ ИСПРАВЛЕНО: Загружаем модели из config.json вместо hardcode
+        available_models = self.load_models_from_config()
+        model_combo['values'] = available_models
+        
         model_combo.grid(row=row, column=1, sticky=tk.W, pady=10)
         model_combo.bind("<<ComboboxSelected>>", lambda e: self.on_setting_change())
         row += 1
